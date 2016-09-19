@@ -10,6 +10,9 @@ plotGenotypeMap <- function(MutDat, title = "", index = NULL){
   names(freqV) <- MutDat$location
   genotype_table <- data.frame(location = names(freqV),
                                genotype = ifelse(as.numeric(freqV) > .5, "V", "A"))
+  ## fix to make it include both genotypes in the legend
+  genotype_table$genotype <- factor(genotype_table$genotype, levels = c("A", "V"))
+  ## end fix
   Map@data$location <- gsub("GrandCapeMo","GrandCapeMount", gsub("WesternRura", "WesternRural", gsub("WesternUrba", "WesternUrban", Map@data$location)))
   Map.f <- fortify(Map, region = "location")
   Map.f$location <- Map.f$id
@@ -34,7 +37,7 @@ plotGenotypeMap <- function(MutDat, title = "", index = NULL){
     geom_polygon(data = Map.U, 
                  aes(x = long, y = lat, group = group, colour = "black"),
                  size = .7, alpha = 0.00001) + 
-    scale_fill_manual(values = c( "A" = "black", "V" = "red")) +
+    scale_fill_manual(values = c( "A" = "black", "V" = "red"), drop = FALSE) +
     scale_color_manual(values = c("black", "black")) +
     labs(fill = "Predominant genotype") +
     guides(colour = FALSE) + 
@@ -55,17 +58,21 @@ NoAmbiguity <- subset(All.Data, location != "?" & GP82 != "X")
 NoAmbiguity$location <- as.character(NoAmbiguity$location)
 NoAmbiguity$GP82 <- as.character(NoAmbiguity$GP82)
 summary(NoAmbiguity)
-Windows <- as.Date(seq(ymd('2014-04-01'), ymd('2015-10-31'), by = '1 month'))
+Windows <- as.Date(seq(ymd('2014-03-01'), ymd('2015-11-30'), by = '1 month'))
 Titles <- as.yearmon(Windows)
 ws <- as.numeric(Windows)
-SplitData <- vector(length(ws), mode = "list")
-for(i in 1:length(ws)) SplitData[[i]] <- subset(NoAmbiguity, date < ws[i])
+SplitData <- vector(length(ws)-1, mode = "list")
+for(i in 2:length(ws)) SplitData[[i-1]] <- subset(NoAmbiguity, ws[i-1] < date & date < ws[i])
 getMutperLoc <- function(dt){
   res <- xtabs(~ location + GP82, dt)
-  data.frame(location = rownames(res), 
-             A = res[, "A"],
-             V = res[, "V"]
-  )
+  if(ncol(res) == 1){
+    missing <- setdiff(c("A", "V"), colnames(res))
+    dt <- data.frame(rownames(res), as.vector(res), rep(0, nrow(res)))
+    names(dt) <- c("location", colnames(res), missing)
+  }else{
+    dt <- data.frame(location = rownames(res), A = res[, "A"], V = res[, "V"])
+  }
+  return(dt)
 } 
 MutsPerLoc <- lapply(SplitData, getMutperLoc)
 # plotGenotypeMap(MutsPerLoc[[13]], title = Titles[13], index = 13)
