@@ -1,5 +1,5 @@
 # diehl_ebola_cell_2016
-supplementary code and data to Diehl et al, 2016 (Cell)
+This repository hosts supplementary code and data to reproduce the epidemiological (clinical) analyses reported in [Diehl et al, 2016 (Cell)](http://www.cell.com/cell/fulltext/S0092-8674(16)31396-4)
 
 ### Post-publication coverage/commentary
 
