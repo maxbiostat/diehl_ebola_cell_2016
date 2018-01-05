@@ -88,7 +88,7 @@ NewCt <- seq(min(forFit$Assay.CT.Value), max(forFit$Assay.CT.Value), length.out 
 mut <- c(0, 1)
 newDat <- expand.grid(NewCt, mut)
 names(newDat) <- c("Assay.CT.Value", "GP82")
-Pred.logit <- predict(simple_glm, newdata = newDat, se.fit = TRUE, type = "response")
+Pred.logit <- predict(simple_glm, newdata = newDat, se.fit = TRUE)
 invlogit <- function(x) exp(x)/(1 + exp(x))
 alpha <- 0.95
 InvLogitPred <- data.frame(lwr = invlogit(Pred.logit$fit + qnorm((1-alpha)/2) * Pred.logit$se.fit) ,
